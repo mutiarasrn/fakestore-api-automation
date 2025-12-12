@@ -1,0 +1,16 @@
+{
+  "id": "fakestore-env",
+  "name": "FakeStoreAPI Env",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://fakestoreapi.com",
+      "enabled": true
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "enabled": true
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "fakestore-api-testing",
+  "version": "1.0.0",
+  "scripts": {
+    "test:newman": "newman run collections/fakestore-collection.json -e environments/fakestore-env.json -r htmlextra --reporter-htmlextra-export reports/report.html"
+  },
+  "devDependencies": {
+    "newman": "^6.2.1",
+    "newman-reporter-htmlextra": "^1.22.0"
+  }
+}

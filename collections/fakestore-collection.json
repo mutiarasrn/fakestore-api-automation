@@ -1,0 +1,361 @@
+{
+  "info": {
+    "name": "FakeStoreAPI Tests",
+    "_postman_id": "fakestore-api-tests-001",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET all products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/products",
+          "host": ["{{base_url}}"],
+          "path": ["products"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response is an array\", function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(Array.isArray(json)).to.be.true;",
+              "});",
+              "",
+              "pm.test(\"Each item matches product schema\", function () {",
+              "    const schema = {",
+              "      \"type\": \"object\",",
+              "      \"required\": [\"id\",\"title\",\"price\",\"description\",\"category\",\"image\"],",
+              "      \"properties\": {",
+              "        \"id\": {\"type\":\"number\"},",
+              "        \"title\": {\"type\":\"string\"},",
+              "        \"price\": {\"type\":[\"number\",\"integer\"]},",
+              "        \"description\": {\"type\":\"string\"},",
+              "        \"category\": {\"type\":\"string\"},",
+              "        \"image\": {\"type\":\"string\"}",
+              "      }",
+              "    };",
+              "    const arr = pm.response.json();",
+              "    if (arr.length>0) { pm.response.to.have.jsonSchema(schema); } else { pm.expect(arr.length).to.eql(0); }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET single product (positive)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/products/{{product_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["products", "{{product_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response matches product schema\", function () {",
+              "    const schema = {",
+              "      \"type\": \"object\",",
+              "      \"required\": [\"id\",\"title\",\"price\",\"description\",\"category\",\"image\"],",
+              "      \"properties\": {",
+              "        \"id\": {\"type\":\"number\"},",
+              "        \"title\": {\"type\":\"string\"},",
+              "        \"price\": {\"type\":[\"number\",\"integer\"]},",
+              "        \"description\": {\"type\":\"string\"},",
+              "        \"category\": {\"type\":\"string\"},",
+              "        \"image\": {\"type\":\"string\"}",
+              "      }",
+              "    };",
+              "    pm.response.to.have.jsonSchema(schema);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET single product (negative)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/products/999999",
+          "host": ["{{base_url}}"],
+          "path": ["products","999999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 404 or empty response\", function () {",
+              "    const code = pm.response.code;",
+              "    // FakeStore may return 404 or an empty object/array; allow both",
+              "    pm.expect(code === 404 || code === 200).to.be.true;",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST create product (positive)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Automation Test Product\",\n  \"price\": 29.99,\n  \"description\": \"Product created during API testing\",\n  \"image\": \"https://i.pravatar.cc/150?img=1\",\n  \"category\": \"electronics\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/products",
+          "host": ["{{base_url}}"],
+          "path": ["products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 or 201\", function () {",
+              "    pm.expect([200,201]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"Response contains id and matches response schema\", function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('id');",
+              "    const schema = {",
+              "      \"type\": \"object\",",
+              "      \"required\": [\"id\",\"title\",\"price\",\"description\",\"category\",\"image\"],",
+              "      \"properties\": {",
+              "        \"id\": {\"type\":\"number\"},",
+              "        \"title\": {\"type\":\"string\"},",
+              "        \"price\": {\"type\":[\"number\",\"integer\"]},",
+              "        \"description\": {\"type\":\"string\"},",
+              "        \"category\": {\"type\":\"string\"},",
+              "        \"image\": {\"type\":\"string\"}",
+              "      }",
+              "    };",
+              "    pm.response.to.have.jsonSchema(schema);",
+              "    // Save id to environment for later use",
+              "    pm.environment.set('product_id', json.id);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST create product (negative)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 9.99\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/products",
+          "host": ["{{base_url}}"],
+          "path": ["products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Expect failure or bad request on incomplete body\", function () {",
+              "    // FakeStore may still accept but we expect either 400 or a response without required props",
+              "    const code = pm.response.code;",
+              "    if (code === 200 || code === 201) {",
+              "        const json = pm.response.json();",
+              "        pm.expect(json).to.not.have.property('title');",
+              "    } else {",
+              "        pm.expect([400,422,500,404]).to.include(code);",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT update product (positive)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Updated from Automation Test\",\n  \"price\": 35.5\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/products/{{product_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["products","{{product_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 for update\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Response contains updated fields\", function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('title');",
+              "    pm.expect(json.title).to.include('Updated');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT update product (negative)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Should Not Update\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/products/999999",
+          "host": ["{{base_url}}"],
+          "path": ["products","999999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Expect error for invalid id update\", function () {",
+              "    // Accept 404 or 200 with no meaningful effect; assert accordingly",
+              "    const code = pm.response.code;",
+              "    pm.expect([200,404,500]).to.include(code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE product (positive)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/products/{{product_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["products","{{product_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status 200 or 204 for delete\", function () {",
+              "    pm.expect([200,204]).to.include(pm.response.code);",
+              "});",
+              "",
+              "pm.test(\"Delete response has id or empty\", function () {",
+              "    try {",
+              "        const json = pm.response.json();",
+              "        if (json) pm.expect(json).to.have.property('id');",
+              "    } catch (e) {",
+              "        pm.expect(pm.response.text()).to.be.ok;",
+              "    }",
+              "});",
+              "",
+              "// Clear environment product_id after delete",
+              "pm.environment.unset('product_id');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE product (negative)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/products/999999",
+          "host": ["{{base_url}}"],
+          "path": ["products","999999"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Expect 404 or harmless server response\", function () {",
+              "    const code = pm.response.code;",
+              "    pm.expect([200,404,500]).to.include(code);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [],
+  "variable": []
+}
